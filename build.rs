@@ -1,7 +1,56 @@
 use std::env;
+use std::fs;
 use std::path::PathBuf;
+use std::process::Command;
 
 fn main() {
+    let status = Command::new("git")
+        .arg("submodule")
+        .arg("init")
+        .spawn()
+        .expect("Couldn't run `git submodule init`")
+        .wait()
+        .expect("Waiting for the child failed");
+    if !status.success() {
+        panic!("`git submodule init` returned a failure");
+    }
+
+    let status = Command::new("git")
+        .arg("submodule")
+        .arg("update")
+        .arg("--recursive")
+        .spawn()
+        .expect("Couldn't run `git submodule update --recursive`")
+        .wait()
+        .expect("Waiting for the child failed");
+    if !status.success() {
+        panic!("`git submodule update --recursive` returned a failure");
+    }
+
+    let status = Command::new("npm")
+        .arg("install")
+        .current_dir(fs::canonicalize("./tmi_cxx").expect("./tmi_cxx does not exist"))
+        .spawn()
+        .expect("Couldn't run `npm install`")
+        .wait()
+        .expect("Waiting for the child failed");
+    if !status.success() {
+        panic!("`npm install` returned a failure");
+    }
+
+    let status = Command::new("ln")
+        .arg("-s")
+        .arg("tmi_cxx.node")
+        .arg("libtmi_cxx.so")
+        .current_dir(fs::canonicalize("./tmi_cxx/build/Release").expect("./tmi_cxx does not exist"))
+        .spawn()
+        .expect("Couldn't run `ln`")
+        .wait()
+        .expect("Waiting for the child failed");
+    if !status.success() {
+        panic!("`ln` returned a failure");
+    }
+
     println!("cargo:rustc-link-lib=tmi_cxx");
     println!("cargo:rustc-link-search=./tmi_cxx/build/Release");
 

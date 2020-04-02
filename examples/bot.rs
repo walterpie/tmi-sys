@@ -1,6 +1,4 @@
 use std::ffi::{c_void, CStr, CString};
-use std::fs::File;
-use std::io::Write;
 use std::os::raw::{c_char, c_int};
 
 use tmi_sys::*;
@@ -18,7 +16,7 @@ extern "C" fn on_chat(
     msg: *const c_char,
     self_: c_int,
 ) {
-    let userdata = unsafe { &mut *(tmi_userdata(client) as *mut Userdata) };
+    let _userdata = unsafe { &mut *(tmi_userdata(client) as *mut Userdata) };
     let channel = unsafe { CStr::from_ptr(channel) };
     let msg = unsafe { CStr::from_ptr(msg) };
     let msg = msg.to_string_lossy();
@@ -26,7 +24,7 @@ extern "C" fn on_chat(
 
     let username_obj = unsafe { tmi_object_get(userstate, b"display-name\0".as_ptr() as _) };
     let username = unsafe { tmi_object_to_string(username_obj) };
-    let username = unsafe { CStr::from_ptr(username) };
+    let _username = unsafe { CStr::from_ptr(username) };
 
     if self_ {
         return;
