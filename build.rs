@@ -52,7 +52,10 @@ fn main() {
     }
 
     println!("cargo:rustc-link-lib=tmi_cxx");
-    println!("cargo:rustc-link-search=./tmi_cxx/build/Release");
+    let search_path = fs::canonicalize("./tmi_cxx/build/Release")
+        .expect("./tmi_cxx/build/Release does not exist");
+    // note this shouldn' fail, so to_string_lossy() is fine
+    println!("cargo:rustc-link-search={}", search_path.to_string_lossy());
 
     println!("cargo:rerun-if-changed=include/tmi_cxx.h");
 
