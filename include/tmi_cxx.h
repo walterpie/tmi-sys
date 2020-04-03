@@ -12,8 +12,8 @@ typedef struct TmiPromise TmiPromise;
 typedef const char *TmiString;
 typedef struct TmiObject TmiObject;
 
-typedef TmiPromise *(*and_then_t)(TmiClient *client, TmiObject *obj);
-typedef void (*or_else_t)(TmiClient *client, TmiObject *obj);
+typedef TmiPromise *(*and_then_t)(TmiClient *client, TmiObject *obj, void *userdata);
+typedef void (*or_else_t)(TmiClient *client, TmiObject *obj, void *userdata);
 
 typedef void (*on_action_t)(TmiClient *client, const char *channel, TmiObject *userstate, const char *msg, int self);
 typedef void (*on_anongiftpaidupgrade_t)(TmiClient *client, const char *channel, const char *username, TmiObject *userstate);
@@ -62,6 +62,8 @@ TmiPromise *tmi_connect(TmiClient *client, void *userdata);
 TmiPromise *tmi_disconnect(TmiClient *client);
 void *tmi_userdata(TmiClient *client);
 
+void tmi_promise_set_userdata(TmiPromise *promise, void *userdata);
+void *tmi_promise_userdata(TmiPromise *promise);
 TmiPromise *tmi_promise_and_then(TmiPromise *promise, and_then_t and_then);
 void tmi_promise_or_else(TmiPromise *promise, or_else_t or_else);
 
@@ -183,6 +185,7 @@ namespace tmi_cxx {
 
         and_then_t cb_and_then;
         or_else_t cb_or_else;
+        void *userdata;
 
     public:
         Isolate* isolate;
@@ -193,6 +196,9 @@ namespace tmi_cxx {
         ~TmixxPromise();
 
         static void Init(Local<Object> exports);
+
+        void set_userdata(void *userdata);
+        void* get_userdata();
 
         TmixxPromise *and_then(and_then_t cb);
         void or_else(or_else_t cb);
