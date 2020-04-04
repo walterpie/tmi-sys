@@ -5,7 +5,7 @@ use tmi_sys::*;
 
 struct Userdata;
 
-extern "C" fn catch(_client: *mut TmiClient, _e: *mut TmiObject) {
+extern "C" fn catch(_client: *mut TmiClient, _e: *mut TmiObject, _: *mut c_void) {
     eprintln!("encountered an error!");
 }
 
@@ -49,7 +49,8 @@ pub extern "C" fn tmicxx_main(client: *mut TmiClient) {
     let userdata = &mut userdata as *mut _ as *mut c_void;
 
     unsafe {
-        tmi_connect(client, userdata);
         tmi_on_chat(client, Some(on_chat));
+        let promise = tmi_connect(client, userdata);
+        tmi_promise_or_else(promise, Some(catch));
     }
 }
